@@ -1,17 +1,17 @@
-# Deltalytix
+# TRADINGSYSTEM
 
 <div align="center">
-  <img src="public/apple-icon.png" alt="Deltalytix Logo" width="120" height="120">
-  
+  <img src="public/apple-icon.png" alt="TRADINGSYSTEM Logo" width="120" height="120">
+
   <h3>Open-source trading analytics platform for professional traders</h3>
-  
-  [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+
+  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
   [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
   [![React](https://img.shields.io/badge/React-19-blue)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
   [![Discord](https://img.shields.io/discord/a5YVF5Ec2n?label=Discord&logo=discord)](https://discord.gg/a5YVF5Ec2n)
-  
-  [🚀 Live Demo](https://deltalytix.app) • [💬 Discord Community](https://discord.gg/a5YVF5Ec2n) • [🐛 Report Bug](https://github.com/hugodemenez/deltalytix/issues)
+
+  [🚀 Live Demo](https://tradingsystem.app) • [💬 Discord Community](https://discord.gg/a5YVF5Ec2n) • [🐛 Report Bug](https://github.com/yourusername/tradingsystem/issues)
 </div>
 
 ---
@@ -118,8 +118,8 @@ Before you begin, ensure you have the following:
 ### Step 1: Clone and Install
 
 ```bash
-git clone https://github.com/hugodemenez/deltalytix.git
-cd deltalytix
+git clone https://github.com/yourusername/tradingsystem.git
+cd tradingsystem
 npm install  # or bun install
 ```
 
@@ -211,7 +211,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 ## 📁 Project Structure
 
 ```
-deltalytix/
+tradingsystem/
 ├── app/                    # Next.js App Router
 │   ├── [locale]/          # Internationalized routes
 │   │   ├── dashboard/     # Main dashboard pages
@@ -281,7 +281,7 @@ const t = useI18n()
 
 ## 🤝 Contributing
 
-We welcome contributions to Deltalytix! Here's how you can help:
+We welcome contributions to TRADINGSYSTEM! Here's how you can help:
 
 ### Getting Started
 1. Fork the repository
@@ -313,19 +313,19 @@ We welcome contributions to Deltalytix! Here's how you can help:
 
 ## 📄 License
 
-This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)**.
+This project is licensed under the **MIT License** - one of the most permissive and business-friendly open source licenses.
 
 ### Key Points:
-- ✅ **You can use, modify, and distribute this software for non-commercial purposes**
-- ✅ **You must give appropriate credit and provide a link to the license**
-- ✅ **You can create derivative works for non-commercial use**
-- ❌ **You cannot use this software for commercial purposes**
-- ❌ **You cannot distribute this software commercially without permission**
+- ✅ **You can use this software for any purpose, including commercial applications**
+- ✅ **You can modify, merge, publish, and distribute the software freely**
+- ✅ **You can sublicense and sell copies of the software**
+- ✅ **You can use it in proprietary commercial products**
+- ✅ **Full freedom for personal, educational, and commercial use**
 
 ### What This Means:
-This license allows you to use Deltalytix for personal, educational, and non-commercial purposes. You can modify and share the code as long as you give proper attribution and don't use it commercially.
+The MIT License gives you complete freedom to use TRADINGSYSTEM for any purpose - whether personal projects, educational institutions, or commercial trading platforms. You can integrate it into proprietary software, modify it as needed, and even sell products built with it. The only requirement is to include the original copyright notice and license text in your copies or substantial portions of the software.
 
-**For commercial licensing options, please contact us.**
+**No commercial licensing needed - it's free for everyone!**
 
 Read the full license text in the [LICENSE](LICENSE) file.
 
@@ -349,7 +349,7 @@ Read the full license text in the [LICENSE](LICENSE) file.
 ## 🙏 Acknowledgments
 
 ### Contributors
-Thank you to all the contributors who help make Deltalytix better!
+Thank you to all the contributors who help make TRADINGSYSTEM better!
 
 ### Open Source Projects
 This project builds upon many excellent open source libraries:
@@ -361,7 +361,7 @@ This project builds upon many excellent open source libraries:
 - [Radix UI](https://radix-ui.com/) - Accessible component primitives
 
 ### Inspiration
-Deltalytix was inspired by the need for better trading analytics tools in the open source community.
+TRADINGSYSTEM was inspired by the need for better trading analytics tools in the open source community.
 
 ---
 
@@ -389,7 +389,7 @@ Deltalytix was inspired by the need for better trading analytics tools in the op
 - [ ] **Performance Coaching** - AI-powered suggestions based on historical trading behavior
 
 ### 🚀 Long-term Vision (2026+)
-- [ ] **Third-Party Dashboard Licensing** - Prop firms can embed Deltalytix directly into their platforms
+- [ ] **Third-Party Dashboard Licensing** - Prop firms can embed TRADINGSYSTEM directly into their platforms
 - [ ] **Interactive Brokers API Integration** - Direct sync replacing PDF imports for real-time data
 - [ ] **Advanced Market Analytics** - Deep market insights powered by Databento data feeds
 - [ ] **White-Label Solutions** - Customizable platform for trading firms and educational institutions
@@ -406,10 +406,10 @@ Deltalytix was inspired by the need for better trading analytics tools in the op
 ---
 
 <div align="center">
-  <p>Made with ❤️ by Hugo DEMENEZ & the Deltalytix community</p>
+  <p>Made with ❤️ by the TRADINGSYSTEM community</p>
   <p>
-    <a href="https://github.com/hugodemenez/deltalytix">GitHub</a> •
+    <a href="https://github.com/yourusername/tradingsystem">GitHub</a> •
     <a href="https://discord.gg/a5YVF5Ec2n">Discord</a> •
-    <a href="https://deltalytix.app">Website</a>
+    <a href="https://tradingsystem.app">Website</a>
   </p>
 </div>
