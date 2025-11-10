@@ -1,0 +1,485 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  name              String?
+  avatarUrl         String?   @map("avatar_url")
+
+  // Supabase Auth ID
+  supabaseId        String    @unique @map("supabase_id")
+
+  // Subscription & Billing
+  stripeCustomerId  String?   @unique @map("stripe_customer_id")
+  subscriptionTier  SubscriptionTier @default(FREE)
+  subscriptionStatus SubscriptionStatus @default(INACTIVE)
+  subscriptionId    String?   @map("subscription_id")
+  subscriptionEndsAt DateTime? @map("subscription_ends_at")
+
+  // User Preferences
+  locale            String    @default("en")
+  timezone          String    @default("UTC")
+  theme             String    @default("dark")
+
+  // Metadata
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  lastLoginAt       DateTime? @map("last_login_at")
+
+  // Relations
+  accounts          Account[]
+  trades            Trade[]
+  journals          Journal[]
+  dashboardLayouts  DashboardLayout[]
+  aiConversations   AIConversation[]
+  notifications     Notification[]
+  apiKeys           ApiKey[]
+  webhooks          Webhook[]
+
+  @@map("users")
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+}
+
+// ============================================
+// TRADING ACCOUNTS
+// ============================================
+
+model Account {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Account Details
+  accountNumber     String    @map("account_number")
+  accountName       String    @map("account_name")
+  broker            String
+  accountType       AccountType @default(LIVE)
+
+  // Balance & Performance
+  initialBalance    Float     @default(0) @map("initial_balance")
+  currentBalance    Float     @default(0) @map("current_balance")
+  currency          String    @default("USD")
+
+  // Integration Settings
+  platform          String?   // Tradovate, Rithmic, IBKR, etc.
+  apiKeyId          String?   @map("api_key_id")
+  lastSyncedAt      DateTime? @map("last_synced_at")
+  syncEnabled       Boolean   @default(false) @map("sync_enabled")
+
+  // Encryption
+  encryptedCredentials String? @map("encrypted_credentials") @db.Text
+
+  // Metadata
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  archivedAt        DateTime? @map("archived_at")
+
+  // Relations
+  trades            Trade[]
+
+  @@unique([userId, accountNumber])
+  @@index([userId])
+  @@map("accounts")
+}
+
+enum AccountType {
+  LIVE
+  DEMO
+  PAPER
+  PROP_FIRM
+}
+
+// ============================================
+// TRADES
+// ============================================
+
+model Trade {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accountId         String    @map("account_id")
+  account           Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Trade Details
+  symbol            String
+  side              TradeSide
+  quantity          Float
+  entryPrice        Float     @map("entry_price")
+  exitPrice         Float?    @map("exit_price")
+
+  // Timestamps
+  entryTime         DateTime  @map("entry_time")
+  exitTime          DateTime? @map("exit_time")
+
+  // P&L
+  grossPnl          Float?    @map("gross_pnl")
+  netPnl            Float?    @map("net_pnl")
+  commission        Float     @default(0)
+  fees              Float     @default(0)
+
+  // Risk Metrics
+  stopLoss          Float?    @map("stop_loss")
+  takeProfit        Float?    @map("take_profit")
+  riskRewardRatio   Float?    @map("risk_reward_ratio")
+
+  // Trade Classification
+  strategy          String?
+  tags              String[]  @default([])
+  setupType         String?   @map("setup_type")
+
+  // Market Conditions
+  marketCondition   String?   @map("market_condition")
+  timeframe         String?
+
+  // AI Analysis
+  aiSentiment       String?   @map("ai_sentiment")
+  aiInsights        String?   @map("ai_insights") @db.Text
+
+  // External IDs
+  externalTradeId   String?   @unique @map("external_trade_id")
+  orderId           String?   @map("order_id")
+
+  // Metadata
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  executions        TradeExecution[]
+  journals          Journal[]
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([symbol])
+  @@index([entryTime])
+  @@map("trades")
+}
+
+enum TradeSide {
+  LONG
+  SHORT
+}
+
+// ============================================
+// TRADE EXECUTIONS (for multiple fills)
+// ============================================
+
+model TradeExecution {
+  id                String    @id @default(uuid())
+  tradeId           String    @map("trade_id")
+  trade             Trade     @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  executionTime     DateTime  @map("execution_time")
+  quantity          Float
+  price             Float
+  commission        Float     @default(0)
+  fees              Float     @default(0)
+
+  executionType     ExecutionType @map("execution_type")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([tradeId])
+  @@map("trade_executions")
+}
+
+enum ExecutionType {
+  ENTRY
+  EXIT
+  PARTIAL_ENTRY
+  PARTIAL_EXIT
+}
+
+// ============================================
+// JOURNAL ENTRIES
+// ============================================
+
+model Journal {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tradeId           String?   @map("trade_id")
+  trade             Trade?    @relation(fields: [tradeId], references: [id], onDelete: SetNull)
+
+  // Journal Content
+  title             String
+  content           String    @db.Text // TipTap JSON content
+
+  // Classification
+  entryType         JournalEntryType @default(GENERAL) @map("entry_type")
+  mood              String?
+  tags              String[]  @default([])
+
+  // Attachments
+  images            String[]  @default([])
+
+  // AI Features
+  aiSummary         String?   @map("ai_summary") @db.Text
+  aiInsights        String?   @map("ai_insights") @db.Text
+
+  // Metadata
+  journalDate       DateTime  @default(now()) @map("journal_date")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([journalDate])
+  @@map("journals")
+}
+
+enum JournalEntryType {
+  GENERAL
+  TRADE_REVIEW
+  MISTAKE
+  SUCCESS
+  LESSON_LEARNED
+  MARKET_ANALYSIS
+}
+
+// ============================================
+// DASHBOARD LAYOUTS
+// ============================================
+
+model DashboardLayout {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name              String
+  layout            Json      // React Grid Layout configuration
+  isDefault         Boolean   @default(false) @map("is_default")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("dashboard_layouts")
+}
+
+// ============================================
+// AI CONVERSATIONS
+// ============================================
+
+model AIConversation {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title             String?
+  messages          Json      // Array of messages
+
+  // Context
+  contextType       String?   @map("context_type") // trade, journal, general
+  contextId         String?   @map("context_id")
+
+  // Metadata
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("ai_conversations")
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type              NotificationType
+  title             String
+  message           String    @db.Text
+
+  // Action
+  actionUrl         String?   @map("action_url")
+  actionLabel       String?   @map("action_label")
+
+  // Status
+  isRead            Boolean   @default(false) @map("is_read")
+  readAt            DateTime? @map("read_at")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  TRADE_ALERT
+  SUBSCRIPTION
+  SYSTEM
+}
+
+// ============================================
+// API KEYS (for external integrations)
+// ============================================
+
+model ApiKey {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name              String
+  keyHash           String    @unique @map("key_hash") // Hashed API key
+  platform          String    // tradovate, rithmic, ibkr, etc.
+
+  // Encrypted credentials
+  encryptedSecret   String    @map("encrypted_secret") @db.Text
+
+  // Permissions
+  scopes            String[]  @default([])
+
+  // Status
+  isActive          Boolean   @default(true) @map("is_active")
+  lastUsedAt        DateTime? @map("last_used_at")
+  expiresAt         DateTime? @map("expires_at")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("api_keys")
+}
+
+// ============================================
+// WEBHOOKS
+// ============================================
+
+model Webhook {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  url               String
+  events            String[]  @default([])
+  secret            String
+
+  isActive          Boolean   @default(true) @map("is_active")
+
+  // Stats
+  successCount      Int       @default(0) @map("success_count")
+  failureCount      Int       @default(0) @map("failure_count")
+  lastTriggeredAt   DateTime? @map("last_triggered_at")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("webhooks")
+}
+
+// ============================================
+// IMPORT HISTORY
+// ============================================
+
+model ImportHistory {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+
+  fileName          String    @map("file_name")
+  fileSize          Int       @map("file_size")
+
+  // Results
+  totalRows         Int       @map("total_rows")
+  importedRows      Int       @map("imported_rows")
+  failedRows        Int       @map("failed_rows")
+
+  // Details
+  broker            String?
+  accountNumber     String?   @map("account_number")
+
+  // AI Mapping
+  aiMappingUsed     Boolean   @default(false) @map("ai_mapping_used")
+  fieldMapping      Json?     @map("field_mapping")
+
+  // Status
+  status            ImportStatus @default(PENDING)
+  errorMessage      String?   @map("error_message") @db.Text
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  completedAt       DateTime? @map("completed_at")
+
+  @@index([userId])
+  @@map("import_history")
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ============================================
+// SYSTEM TABLES
+// ============================================
+
+model SystemSettings {
+  id                String    @id @default(uuid())
+  key               String    @unique
+  value             String    @db.Text
+  description       String?
+
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+model AuditLog {
+  id                String    @id @default(uuid())
+  userId            String?   @map("user_id")
+
+  action            String
+  entityType        String    @map("entity_type")
+  entityId          String?   @map("entity_id")
+
+  oldValues         Json?     @map("old_values")
+  newValues         Json?     @map("new_values")
+
+  ipAddress         String?   @map("ip_address")
+  userAgent         String?   @map("user_agent")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
